@@ -14,7 +14,7 @@ PAGE="""\
 </head>
 <body>
 <center><h1>Dominatrix Security Camera</h1></center>
-<center><img src="stream.mjpg" width="640" height="480"></center>
+<center><img src="stream.h264" width="640" height="480"></center>
 </body>
 </html>
 """
@@ -38,6 +38,12 @@ class StreamingOutput(object):
             self.buffer.seek(0)
         return self.buffer.write(buf)
 
+    def flush(self):
+        self.output_file.flush()
+
+    def close(self):
+        self.output_file.close()
+
 
 class StreamingHandler(server.BaseHTTPRequestHandler):
     def do_GET(self):
@@ -52,7 +58,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             self.send_header('Content-Length', len(content))
             self.end_headers()
             self.wfile.write(content)
-        elif self.path == '/stream.mjpg':
+        elif self.path == '/stream.h264':
             self.send_response(200)
             self.send_header('Age', 0)
             self.send_header('Cache-Control', 'no-cache, private')
@@ -65,7 +71,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                         output.condition.wait()
                         frame = output.frame
                     self.wfile.write(b'--FRAME\r\n')
-                    self.send_header('Content-Type', 'image/jpeg')
+                    self.send_header('Content-Type', 'video/h264')
                     self.send_header('Content-Length', len(frame))
                     self.end_headers()
                     self.wfile.write(frame)
@@ -96,8 +102,8 @@ with picamera.PiCamera() as camera:
 
     # Record video to the custom output (we need to specify the format as
     # the custom output doesn't pretend to be a file with a filename)
-    # camera.start_recording(my_output, format='h264')
-    camera.start_recording(output, format='mjpeg')
+    camera.start_recording(output, format='h264')
+    # camera.start_recording(output, format='mjpeg')
     try:
         address = ('', 8000)
         server = StreamingServer(address, StreamingHandler)
