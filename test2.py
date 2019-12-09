@@ -24,10 +24,10 @@ class StreamingOutput(object):
         self.frame = None
         self.buffer = io.BytesIO()
         self.condition = Condition()
-        self.output_file = io.open(filename, 'wb')
+        #self.output_file = io.open(filename, 'wb')
 
     def write(self, buf):
-        self.output_file.write(buf)
+        #self.output_file.write(buf)
         if buf.startswith(b'\xff\xd8'):
             # New frame, copy the existing buffer's content and notify all
             # clients it's available
@@ -38,11 +38,11 @@ class StreamingOutput(object):
             self.buffer.seek(0)
         return self.buffer.write(buf)
 
-    def flush(self):
-        self.output_file.flush()
+    # def flush(self):
+    #     self.output_file.flush()
 
-    def close(self):
-        self.output_file.close()
+    # def close(self):
+    #     self.output_file.close()
 
 
 class StreamingHandler(server.BaseHTTPRequestHandler):
